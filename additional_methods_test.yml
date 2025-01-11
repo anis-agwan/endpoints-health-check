@@ -1,0 +1,39 @@
+- headers:
+    user-agent: fetch-synthetic-monitor
+  method: PUT
+  name: fetch update user data
+  url: https://reqbin.com/echo/put/json
+  body: '{"name":"John Doe", "email":"john.doe@example.com"}'
+
+- headers:
+    accept: application/json
+    content-type: application/json
+  method: PATCH
+  name: partial update user data
+  url: https://reqbin.com/echo/patch/json
+  body: '{"Id": 78912, "Customer": "Jason Sweet", "Quantity": 1}'
+
+- headers:
+    user-agent: fetch-synthetic-monitor
+  method: DELETE
+  name: delete user account
+  url: https://reqbin.com/echo/delete/json
+  body: '{"userId":"12345"}'
+
+- headers:
+    user-agent: fetch-synthetic-monitor
+  method: HEAD
+  name: fetch user data headers
+  url: https://fetch.com/
+
+- headers:
+    user-agent: fetch-synthetic-monitor
+  method: HEAD
+  name: fetch rewards user data headers
+  url: https://www.fetchrewards.com/
+
+- headers:
+    user-agent: fetch-synthetic-monitor
+  method: OPTIONS
+  name: fetch trace user resource
+  url: https://api.reqbin.com/api/v1/requests

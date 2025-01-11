@@ -10,18 +10,32 @@ def read_config(file_path):
 
 def check_health(endpoint):
     url = endpoint['url']
-    method = endpoint.get('method', 'GET').upper()
+    method = endpoint.get('method', 'GET').upper()  # Default to GET if no method is provided
     headers = endpoint.get('headers', {})
     body = endpoint.get('body', None)
     
     try:
+        # Handle different HTTP methods
         if method == 'GET':
             response = requests.get(url, headers=headers, timeout=0.5)
         elif method == 'POST':
             response = requests.post(url, headers=headers, json=body, timeout=5)
+        elif method == 'PUT':
+            response = requests.put(url, headers=headers, json=body, timeout=5)
+        elif method == 'DELETE':
+            response = requests.delete(url, headers=headers, json=body, timeout=5)
+        elif method == 'PATCH':
+            response = requests.patch(url, headers=headers, json=body, timeout=5)
+        elif method == 'OPTIONS':
+            response = requests.options(url, headers=headers, timeout=5)
+        elif method == 'HEAD':
+            response = requests.head(url, headers=headers, timeout=5)
+        elif method == 'TRACE':
+            response = requests.request('TRACE', url, headers=headers, timeout=5)
         else:
-            response = requests.request(method, url, headers=headers, json=body, timeout=5)
+            return 'DOWN'
         
+        # Check if the response status code is 2xx and response time is under 500ms
         if response.status_code >= 200 and response.status_code < 300 and response.elapsed.total_seconds() < 0.5:
             return 'UP'
         else:

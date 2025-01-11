@@ -1,0 +1,14 @@
+# Additional test cases
+
+- name: fetch extension download page
+  url: https://fetch.com/extension
+- headers:
+    user-agent: fetch-synthetic-monitor
+  name: fetch extension download page
+  url: https://www.fetchrewards.com/extension
+- headers:
+    user-agent: fetch-synthetic-monitor
+  name: fetch how to use page
+  url: https://fetch.com/blog/fetch-tips-tricks
+- name: fetch rewards how to use page(broken link)
+  url: https://www.fetchrewards.com//fetch-tips-tricks

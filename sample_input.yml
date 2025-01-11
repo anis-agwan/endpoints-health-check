@@ -17,17 +17,3 @@
   url: https://fetch.com/some/post/endpoint
 - name: fetch rewards index page
   url: https://www.fetchrewards.com/
-
-
-# Additional test cases
-
-# - name: fetch extension download page
-#   url: https://fetch.com/extension
-# - name: fetch extension download page
-#   url: https://www.fetchrewards.com/extension
-# - name: fetch how to use page
-#   headers:
-#     user-agent: fetch-synthetic-monitor
-#   url: https://fetch.com/blog/fetch-tips-tricks
-# - name: fetch rewards how to use page(broken link)
-#   url: https://www.fetchrewards.com//fetch-tips-tricks
