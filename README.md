@@ -26,6 +26,34 @@ or
 pip3 install requests pyyaml
 ```
 
+## Setting Up a Virtual Python Environment
+
+To ensure a clean and isolated development environment, it's recommended to use a virtual environment. This helps manage the project's dependencies separately from the system's Python installation.
+
+### Steps to Create a Virtual Environment
+
+1. **Create a Virtual Environment:**
+   Navigate to your project directory and create a virtual environment using the built-in `venv` module:
+   ```bash
+   python -m venv venv
+   ```
+    This command will create a new directory venv in your project folder.
+
+2.	Activate the Virtual Environment:
+    - On Windows:
+    ```bash
+    .\venv\Scripts\activate
+    ```
+    - On macOS/Linux:
+    ```bash
+    source venv/bin/activate
+    ```
+
+3.	To Deactivate the Virtual Environment:
+    ```bash
+    deactivate
+    ```
+
 
 ## Configuration
 The configuration is stored in a YAML file, where each endpoint is defined with:
