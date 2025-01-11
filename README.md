@@ -44,6 +44,10 @@ You can find the sample inputs in the "sample_input.yml" file.
 ```bash
     python main.py sample_input.yml
 ```
+or 
+```bash
+    python3 main.py sample_input.yml
+```
 Where sample_input.yml is the path to your configuration file.
 
 The script will continue running indefinitely, checking the endpoints every 15 seconds. Press Ctrl+C to stop the script.

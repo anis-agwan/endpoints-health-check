@@ -11,4 +11,6 @@
   name: fetch how to use page
   url: https://fetch.com/blog/fetch-tips-tricks
 - name: fetch rewards how to use page(broken link)
+  headers:
+      user-agent: fetch-synthetic-monitor
   url: https://www.fetchrewards.com//fetch-tips-tricks
