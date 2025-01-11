@@ -4,11 +4,11 @@ This script monitors the availability and response time of various endpoints. It
 
 ## Features
 
-- **Health Check**: Periodically checks the health of configured URLs.
-- **Custom Headers**: Supports custom headers as configured in the YAML file.
-- **Multiple HTTP Methods**: Handles various HTTP methods (`GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `OPTIONS`, `HEAD`, `TRACE`).
-- **Response Validation**: Checks if the HTTP status code is in the 2xx range and ensures the response time is under 0.5 seconds.
-- **Logging**: Logs the availability percentage for each domain based on the number of successful responses.
+- Health Check**: Periodically checks the health of configured URLs.
+- Custom Headers**: Supports custom headers as configured in the YAML file.
+- Multiple HTTP Methods**: Handles various HTTP methods (`GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `OPTIONS`, `HEAD`, `TRACE`).
+- Response Validation**: Checks if the HTTP status code is in the 2xx range and ensures the response time is under 0.5 seconds.
+- Logging**: Logs the availability percentage for each domain based on the number of successful responses.
   
 ## Requirements
 
