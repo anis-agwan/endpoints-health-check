@@ -51,3 +51,10 @@ The script will continue running indefinitely, checking the endpoints every 15 s
 You can also find additional test cases in files:
 1. additional_methods_test.yml
 2. additional_endpoints_tests.yml
+
+## Logs
+- Logs are written to health_check.log.
+- The log file includes the following information:
+- Timestamps for each health check.
+- HTTP status codes and response times for each request.
+- Warnings and errors if a request fails.
