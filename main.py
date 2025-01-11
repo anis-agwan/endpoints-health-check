@@ -4,19 +4,6 @@ import time
 import logging
 from collections import defaultdict
 
-# Remove all existing handlers, including the StreamHandler (console logging)
-logging.getLogger().handlers.clear()
-
-# Set up logging configuration for file only
-file_handler = logging.FileHandler('health_check.log')
-file_handler.setLevel(logging.INFO)
-file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-
-# Create a logger and add the file handler to it
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-logger.addHandler(file_handler)
-
 def read_config(file_path):
     logger.info(f"Reading configuration from {file_path}")
     try:
@@ -100,8 +87,22 @@ def main(file_path):
 
 if __name__ == "__main__":
     import sys
+    # Remove all existing handlers, including the StreamHandler (console logging)
+    logging.getLogger().handlers.clear()
+
+    # Set up logging configuration for file only
+    file_handler = logging.FileHandler('health_check.log')
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+
+    # Create a logger and add the file handler to it
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    logger.addHandler(file_handler)
     if len(sys.argv) < 2:
         print("Error: Missing file name in the command line arguments.")
         logger.error("Missing file name in the command line arguments.")
-    else:
-        main(sys.argv[1])
+        sys.exit(1)
+    
+    file_handler = logging.FileHandler(f'{sys.argv[1].split(".")[0]}_health_check.log')
+    main(sys.argv[1])
