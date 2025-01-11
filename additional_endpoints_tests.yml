@@ -14,3 +14,9 @@
   headers:
       user-agent: fetch-synthetic-monitor
   url: https://www.fetchrewards.com//fetch-tips-tricks
+
+- headers:
+    user-agent: fetch-synthetic-monitor
+  method: GET
+  name: slow response page
+  url: https://httpstat.us/200?sleep=10000  # URL that intentionally delays response

@@ -2,9 +2,28 @@ import yaml
 import requests
 import time
 import logging
+import sys
 from collections import defaultdict
 
+def configure_logging(file_name):
+    """Set up logging to a file."""
+    logging.getLogger().handlers.clear()
+    file_handler = logging.FileHandler(f'{file_name}_health_check.log')
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+    
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    logger.addHandler(file_handler)
+    return logger
+
+def validate_file_extension(file_path):
+    """Ensure the provided file has a .yaml or .yml extension."""
+    if not file_path.lower().endswith(('.yaml', '.yml')):
+        raise ValueError("Provided file must be a .yaml or .yml file.")
+
 def read_config(file_path):
+    """Read and load configuration from a YAML file."""
     logger.info(f"Reading configuration from {file_path}")
     try:
         with open(file_path, 'r') as file:
@@ -15,48 +34,49 @@ def read_config(file_path):
         logger.error(f"Failed to read the configuration file: {e}")
         raise
 
+def send_request(method, url, headers=None, body=None):
+    """Send an HTTP request and return the response."""
+    request_methods = {
+        'GET': requests.get,
+        'POST': requests.post,
+        'PUT': requests.put,
+        'DELETE': requests.delete,
+        'PATCH': requests.patch,
+        'OPTIONS': requests.options,
+        'HEAD': requests.head,
+        'TRACE': lambda url, **kwargs: requests.request('TRACE', url, **kwargs)
+    }
+
+    try:
+        response = request_methods[method](url, headers=headers, json=body, timeout=5)
+        return response
+    except requests.RequestException as e:
+        logger.error(f"Request to {url} failed: {e}")
+        return None
+
 def check_health(endpoint):
+    """Check the health status of a given endpoint."""
     url = endpoint['url']
-    method = endpoint.get('method', 'GET').upper()  # Default to GET if no method is provided
+    method = endpoint.get('method', 'GET').upper()
     headers = endpoint.get('headers', {})
     body = endpoint.get('body', None)
     
     logger.info(f"Checking health for endpoint {url} with method {method}")
-    try:
-        # Handle different HTTP methods
-        if method == 'GET':
-            response = requests.get(url, headers=headers, timeout=0.5)
-        elif method == 'POST':
-            response = requests.post(url, headers=headers, json=body, timeout=5)
-        elif method == 'PUT':
-            response = requests.put(url, headers=headers, json=body, timeout=5)
-        elif method == 'DELETE':
-            response = requests.delete(url, headers=headers, json=body, timeout=5)
-        elif method == 'PATCH':
-            response = requests.patch(url, headers=headers, json=body, timeout=5)
-        elif method == 'OPTIONS':
-            response = requests.options(url, headers=headers, timeout=5)
-        elif method == 'HEAD':
-            response = requests.head(url, headers=headers, timeout=5)
-        elif method == 'TRACE':
-            response = requests.request('TRACE', url, headers=headers, timeout=5)
-        else:
-            logger.warning(f"Unsupported HTTP method {method} for endpoint {url}")
-            return 'DOWN'
-        
-        # Check if the response status code is 2xx and response time is under 500ms
-        if response.status_code >= 200 and response.status_code < 300 and response.elapsed.total_seconds() < 0.5:
-            logger.info(f"Endpoint {url} is UP with status {response.status_code}")
-            return 'UP'
-        else:
-            logger.warning(f"Endpoint {url} is DOWN with status {response.status_code} and response time {response.elapsed.total_seconds()} seconds")
-            return 'DOWN'
-    except requests.RequestException as e:
-        logger.error(f"Request to {url} failed: {e}")
+    
+    if method not in ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD', 'TRACE']:
+        logger.warning(f"Unsupported HTTP method {method} for endpoint {url}")
+        return 'DOWN'
+
+    response = send_request(method, url, headers, body)
+    if response and 200 <= response.status_code < 300 and response.elapsed.total_seconds() < 0.5:
+        logger.info(f"Endpoint {url} is UP with status {response.status_code}")
+        return 'UP'
+    else:
+        logger.warning(f"Endpoint {url} is DOWN with status {response.status_code if response else 'N/A'} and response time {response.elapsed.total_seconds() if response else 'N/A'} seconds")
         return 'DOWN'
 
 def log_availability(availability):
-    # Print to console in a readable format
+    """Log the availability results."""
     print("\nLogging availability results:")
     for domain, data in availability.items():
         total = data['total']
@@ -65,12 +85,10 @@ def log_availability(availability):
         print(f"{domain} has {round(percentage)}% availability percentage")
         logger.info(f"{domain} has {round(percentage)}% availability percentage")
 
-def main(file_path):
-    print("Starting health check program...")
-    logger.info("Starting health check program.")
-    config = read_config(file_path)
+def monitor_endpoints(config):
+    """Continuously monitor the health of endpoints."""
     availability = defaultdict(lambda: {'total': 0, 'up': 0})
-    
+
     try:
         while True:
             for endpoint in config:
@@ -82,27 +100,29 @@ def main(file_path):
             log_availability(availability)
             time.sleep(15)
     except KeyboardInterrupt:
-        print("\nProgram exited by user.")
         logger.info("Program exited by user.")
+        print("\nProgram exited by user.")
 
-if __name__ == "__main__":
-    import sys
-    # Remove all existing handlers, including the StreamHandler (console logging)
-    logging.getLogger().handlers.clear()
-
-    # Set up logging configuration for file only
-    file_handler = logging.FileHandler('health_check.log')
-    file_handler.setLevel(logging.INFO)
-    file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-
-    # Create a logger and add the file handler to it
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-    logger.addHandler(file_handler)
+def main():
+    """Main function to run the health check program."""
     if len(sys.argv) < 2:
         print("Error: Missing file name in the command line arguments.")
-        logger.error("Missing file name in the command line arguments.")
         sys.exit(1)
-    
-    file_handler = logging.FileHandler(f'{sys.argv[1].split(".")[0]}_health_check.log')
-    main(sys.argv[1])
+
+    file_path = sys.argv[1]
+    try:
+        validate_file_extension(file_path)
+        global logger
+        logger = configure_logging(file_path.split('.')[0])
+        logger.info("Starting health check program.")
+        config = read_config(file_path)
+        monitor_endpoints(config)
+    except ValueError as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+    except Exception as e:
+        logger.error(f"An unexpected error occurred: {e}")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()
