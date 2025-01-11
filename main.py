@@ -4,18 +4,28 @@ import time
 import logging
 from collections import defaultdict
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# Remove all existing handlers, including the StreamHandler (console logging)
+logging.getLogger().handlers.clear()
+
+# Set up logging configuration for file only
+file_handler = logging.FileHandler('health_check.log')
+file_handler.setLevel(logging.INFO)
+file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+
+# Create a logger and add the file handler to it
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+logger.addHandler(file_handler)
 
 def read_config(file_path):
-    logging.info(f"Reading configuration from {file_path}")
+    logger.info(f"Reading configuration from {file_path}")
     try:
         with open(file_path, 'r') as file:
             config = yaml.safe_load(file)
-        logging.info("Configuration loaded successfully.")
+        logger.info("Configuration loaded successfully.")
         return config
     except Exception as e:
-        logging.error(f"Failed to read the configuration file: {e}")
+        logger.error(f"Failed to read the configuration file: {e}")
         raise
 
 def check_health(endpoint):
@@ -24,7 +34,7 @@ def check_health(endpoint):
     headers = endpoint.get('headers', {})
     body = endpoint.get('body', None)
     
-    logging.info(f"Checking health for endpoint {url} with method {method}")
+    logger.info(f"Checking health for endpoint {url} with method {method}")
     try:
         # Handle different HTTP methods
         if method == 'GET':
@@ -44,31 +54,33 @@ def check_health(endpoint):
         elif method == 'TRACE':
             response = requests.request('TRACE', url, headers=headers, timeout=5)
         else:
-            logging.warning(f"Unsupported HTTP method {method} for endpoint {url}")
+            logger.warning(f"Unsupported HTTP method {method} for endpoint {url}")
             return 'DOWN'
         
         # Check if the response status code is 2xx and response time is under 500ms
         if response.status_code >= 200 and response.status_code < 300 and response.elapsed.total_seconds() < 0.5:
-            logging.info(f"Endpoint {url} is UP with status {response.status_code}")
+            logger.info(f"Endpoint {url} is UP with status {response.status_code}")
             return 'UP'
         else:
-            logging.warning(f"Endpoint {url} is DOWN with status {response.status_code} and response time {response.elapsed.total_seconds()} seconds")
+            logger.warning(f"Endpoint {url} is DOWN with status {response.status_code} and response time {response.elapsed.total_seconds()} seconds")
             return 'DOWN'
     except requests.RequestException as e:
-        logging.error(f"Request to {url} failed: {e}")
+        logger.error(f"Request to {url} failed: {e}")
         return 'DOWN'
 
 def log_availability(availability):
-    logging.info("Logging availability results:")
+    # Print to console in a readable format
+    print("\nLogging availability results:")
     for domain, data in availability.items():
         total = data['total']
         up = data['up']
         percentage = (up / total) * 100
-        logging.info(f"{domain} has {round(percentage)}% availability percentage")
         print(f"{domain} has {round(percentage)}% availability percentage")
+        logger.info(f"{domain} has {round(percentage)}% availability percentage")
 
 def main(file_path):
-    logging.info("Starting health check program.")
+    print("Starting health check program...")
+    logger.info("Starting health check program.")
     config = read_config(file_path)
     availability = defaultdict(lambda: {'total': 0, 'up': 0})
     
@@ -83,11 +95,13 @@ def main(file_path):
             log_availability(availability)
             time.sleep(15)
     except KeyboardInterrupt:
-        logging.info("Program exited by user.")
+        print("\nProgram exited by user.")
+        logger.info("Program exited by user.")
 
 if __name__ == "__main__":
     import sys
     if len(sys.argv) < 2:
-        logging.error("Missing file name in the command line arguments.")
+        print("Error: Missing file name in the command line arguments.")
+        logger.error("Missing file name in the command line arguments.")
     else:
         main(sys.argv[1])
